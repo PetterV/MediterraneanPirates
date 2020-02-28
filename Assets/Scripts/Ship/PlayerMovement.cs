@@ -4,10 +4,15 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    UIController uIController;
     public GameObject movementTarget;
     public int sailLevel = 0;
     public int maxSailLevel = 2;
     public float turnSpeed = 0.2f;
+
+    void Start(){
+        uIController = GameObject.Find("UIController").GetComponent<UIController>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -30,12 +35,14 @@ public class PlayerMovement : MonoBehaviour
     public void IncreaseSailLevel(){
         if (sailLevel < maxSailLevel){
             sailLevel++;
+            uIController.UpdateSailSpeedDisplay(sailLevel);
         }
     }
 
     public void DecreaseSailLevel(){
         if (sailLevel > 0){
             sailLevel--;
+            uIController.UpdateSailSpeedDisplay(sailLevel);
         }
     }
 

@@ -5,6 +5,7 @@ using TMPro;
 
 public class UIController : MonoBehaviour
 {
+    TextMeshProUGUI sailSpeedDisplay;
     void Awake()
     {
         GameObject[] objs = GameObject.FindGameObjectsWithTag("UIController");
@@ -15,5 +16,14 @@ public class UIController : MonoBehaviour
         }
 
         DontDestroyOnLoad(this.gameObject);
+    }
+
+    void Start(){
+        sailSpeedDisplay = GameObject.Find("SailSpeedDisplay").GetComponent<TextMeshProUGUI>();
+        UpdateSailSpeedDisplay(0);
+    }
+
+    public void UpdateSailSpeedDisplay(int value){
+        sailSpeedDisplay.text = value.ToString();
     }
 }
