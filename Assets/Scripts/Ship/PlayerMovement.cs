@@ -5,30 +5,37 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     UIController uIController;
+    GameController gameController;
     public GameObject movementTarget;
     public int sailLevel = 0;
     public int maxSailLevel = 2;
     public float turnSpeed = 0.2f;
 
     void Start(){
+        gameController = GameObject.Find("GameController").GetComponent<GameController>();
         uIController = GameObject.Find("UIController").GetComponent<UIController>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.W)){
-            IncreaseSailLevel();
+        if (Input.GetKeyDown(KeyCode.Escape)){
+            gameController.TogglePlayerPause();
         }
-        else if (Input.GetKeyDown(KeyCode.S)){
-            DecreaseSailLevel();
-        }
-        MoveForwards();
-        if(Input.GetKey(KeyCode.A)){
-            TurnLeft();
-        }
-        if(Input.GetKey(KeyCode.D)){
-            TurnRight();
+        if (!gameController.paused){
+            if (Input.GetKeyDown(KeyCode.W)){
+                IncreaseSailLevel();
+            }
+            else if (Input.GetKeyDown(KeyCode.S)){
+                DecreaseSailLevel();
+            }
+            MoveForwards();
+            if(Input.GetKey(KeyCode.A)){
+                TurnLeft();
+            }
+            if(Input.GetKey(KeyCode.D)){
+                TurnRight();
+            }
         }
     }
 
