@@ -7,9 +7,19 @@ public class PlayerMovement : MonoBehaviour
     UIController uIController;
     GameController gameController;
     public GameObject movementTarget;
+    public float acceleration = 0.03f;
+    public float deceleration = 0.01f;
+    public float currentSpeed;
+    public float baseSpeed = 1f;
+    public float maxSpeed;
+    public float sailLevelSpeedFactor = 1f;
     public int sailLevel = 0;
-    public int maxSailLevel = 2;
-    public float turnSpeed = 0.2f;
+    int maxSailLevel = 3;
+    public float turnSpeed = 0.1f;
+    public float currentTurnSpeed;
+
+    public bool turningLeft;
+    public bool turningRight;
 
     void Start(){
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
@@ -23,19 +33,32 @@ public class PlayerMovement : MonoBehaviour
             gameController.TogglePlayerPause();
         }
         if (!gameController.paused){
+            // Sail level change
             if (Input.GetKeyDown(KeyCode.W)){
                 IncreaseSailLevel();
             }
             else if (Input.GetKeyDown(KeyCode.S)){
                 DecreaseSailLevel();
             }
-            MoveForwards();
+            // Turning
             if(Input.GetKey(KeyCode.A)){
+                turningLeft = true;
                 TurnLeft();
             }
+            else {
+                turningLeft = false;
+            }
             if(Input.GetKey(KeyCode.D)){
+                turningRight = true;
                 TurnRight();
             }
+            else {
+                turningRight = false;
+            }
+            // Calculate speed forwards
+            CalculateSpeed();
+            // Move forwards
+            MoveForwards();
         }
     }
 
@@ -43,6 +66,8 @@ public class PlayerMovement : MonoBehaviour
         if (sailLevel < maxSailLevel){
             sailLevel++;
             uIController.UpdateSailSpeedDisplay(sailLevel);
+            // Calculate current max speed
+            maxSpeed = CalculateMaxSpeed();
         }
     }
 
@@ -50,12 +75,39 @@ public class PlayerMovement : MonoBehaviour
         if (sailLevel > 0){
             sailLevel--;
             uIController.UpdateSailSpeedDisplay(sailLevel);
+            // Calculate current max speed
+            maxSpeed = CalculateMaxSpeed();
         }
     }
 
-    public void MoveForwards(){
+    float CalculateMaxSpeed(){
+        float sailLevelSpeedImpact = sailLevel * sailLevelSpeedFactor;
+        float calculatedMaxSpeed = baseSpeed * sailLevelSpeedImpact;
+        return calculatedMaxSpeed;
+    }
+    void CalculateSpeed(){
+        float currentAcceleration = acceleration * sailLevel;
+        // Check acceleration if we could be going faster
+        if (currentAcceleration > 0){
+            if (currentSpeed < maxSpeed){
+                currentSpeed = currentSpeed + acceleration;
+            }
+            else {
+                currentSpeed = currentSpeed - deceleration;
+            }
+        }
+        else {
+            currentSpeed = currentSpeed - deceleration;
+        }
+        // Never go backwards
+        if (currentSpeed < 0){
+            currentSpeed = 0;
+        }
+    }
+
+    void MoveForwards(){
         Vector3 heading = movementTarget.transform.position - transform.position;
-        transform.position += heading * sailLevel * Time.deltaTime;
+        transform.position += heading * currentSpeed * Time.deltaTime;
     }
 
     public void TurnLeft(){
@@ -68,11 +120,9 @@ public class PlayerMovement : MonoBehaviour
     }
 
     float GetCurrentTurnSpeed(){
-        int sailLevelForTurnSpeed = maxSailLevel - sailLevel;
-        if (sailLevelForTurnSpeed < 1){
-            sailLevelForTurnSpeed = 1;
-        }
-        float currentTurnSpeed = turnSpeed * sailLevelForTurnSpeed;
+        // TODO: Make nonlinear
+        float turnSpeedFactor = ((maxSailLevel * sailLevelSpeedFactor) + baseSpeed) - currentSpeed;
+        currentTurnSpeed = turnSpeed * turnSpeedFactor;
         return currentTurnSpeed;
     }
 }
